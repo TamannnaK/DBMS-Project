@@ -1,0 +1,92 @@
+
+-- Create Patients Table
+CREATE TABLE Patients (
+    PatientID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    Age INT,
+    Gender VARCHAR(10),
+    ContactInfo VARCHAR(100),
+    MedicalHistory TEXT
+);
+
+-- Create Doctors Table
+CREATE TABLE Doctors (
+    DoctorID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    Specialty VARCHAR(100),
+    ContactInfo VARCHAR(100),
+    Availability VARCHAR(50)
+);
+
+-- Create Appointments Table
+CREATE TABLE Appointments (
+    AppointmentID INT PRIMARY KEY AUTO_INCREMENT,
+    PatientID INT,
+    DoctorID INT,
+    AppointmentDate DATE,
+    AppointmentTime TIME,
+    Status VARCHAR(50),
+    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
+);
+
+-- Create Billing Table
+CREATE TABLE Billing (
+    InvoiceID INT PRIMARY KEY AUTO_INCREMENT,
+    PatientID INT,
+    Amount DECIMAL(10, 2),
+    BillingDate DATE,
+    PaymentStatus VARCHAR(50),
+    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID)
+);
+
+
+-- Sample INSERT Query
+INSERT INTO Patients (Name, Age, Gender, ContactInfo, MedicalHistory)
+VALUES ('John Doe', 45, 'Male', '123-456-7890', 'Diabetic, Hypertension');
+
+-- Sample SELECT Queries
+-- Get all appointments for a patient
+SELECT * FROM Appointments
+WHERE PatientID = 1;
+
+ Get doctors by specialty
+SELECT * FROM Doctors
+WHERE Specialty = 'Cardiology';
+--
+-- Advanced Queries for Reports and Analytics
+
+-- Get the number of appointments per month
+SELECT 
+    DATE_FORMAT(AppointmentDate, '%Y-%m') AS Month,
+    COUNT(*) AS TotalAppointments
+FROM Appointments
+GROUP BY Month
+ORDER BY Month;
+
+-- Get total revenue per month
+SELECT 
+    DATE_FORMAT(BillingDate, '%Y-%m') AS Month,
+    SUM(Amount) AS TotalRevenue
+FROM Billing
+GROUP BY Month
+ORDER BY Month;
+
+-- Get the most frequently visited doctor
+SELECT 
+    d.Name AS DoctorName,
+    COUNT(*) AS TotalAppointments
+FROM Appointments a
+JOIN Doctors d ON a.DoctorID = d.DoctorID
+GROUP BY a.DoctorID
+ORDER BY TotalAppointments DESC
+LIMIT 1;
+
+-- Get list of patients who have unpaid bills
+SELECT 
+    p.Name AS PatientName,
+    b.Amount,
+    b.BillingDate
+FROM Billing b
+JOIN Patients p ON b.PatientID = p.PatientID
+WHERE b.PaymentStatus != 'Paid';
